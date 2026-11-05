@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IRTX Mooloolaba — Project Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#E9EDF2;
+    --panel:#FFFFFF;
+    --ink:#131E31;
+    --muted:#5C6B82;
+    --faint:#8494A8;
+    --rule:#D3DAE4;
+    --amber:#B26A00;
+    --amber-soft:#FBF1E0;
+    --teal:#0E6B62;
+    --teal-soft:#E2F0EE;
+    --alert:#A32C2C;
+    --alert-soft:#FAEBEB;
+    --slate:#2C3E5C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    padding:0 0 80px;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px}
+
+  /* ---------- masthead ---------- */
+  header{
+    background:var(--slate);
+    color:#fff;
+    padding:26px 0 22px;
+    margin-bottom:26px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#9DB0CC;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Archivo',sans-serif;
+    font-weight:700;
+    font-size:clamp(24px,5vw,34px);
+    letter-spacing:-.02em;
+    line-height:1.1;
+  }
+  h1 .sub{display:block;font-weight:500;font-size:.5em;letter-spacing:.02em;color:#9DB0CC;margin-top:8px}
+
+  /* ---------- burn bar ---------- */
+  .burn{margin-top:22px}
+  .burn-track{
+    position:relative;
+    height:34px;
+    background:#22334D;
+    border-radius:2px;
+    overflow:visible;
+  }
+  .burn-fill{
+    position:absolute;inset:0 auto 0 0;
+    background:#42597D;
+    border-right:2px solid #C9D6E8;
+  }
+  .marker{position:absolute;top:0;bottom:0;width:2px;background:var(--amber)}
+  .marker span{
+    position:absolute;top:-19px;left:50%;transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;
+    color:#F0C77A;white-space:nowrap;
+  }
+  .marker.at2{background:#7C8DA6}
+  .marker.at2 span{color:#AFC0D6}
+  .burn-now{
+    position:absolute;top:100%;margin-top:5px;transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:#C9D6E8;white-space:nowrap;
+  }
+  .counters{display:flex;gap:28px;margin-top:34px;flex-wrap:wrap}
+  .counter .n{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:30px;line-height:1;letter-spacing:-.02em;
+  }
+  .counter .n.hot{color:#F0C77A}
+  .counter .l{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:#9DB0CC;margin-top:6px;
+  }
+
+  /* ---------- progress strip ---------- */
+  .overall{
+    display:flex;align-items:center;gap:14px;
+    background:var(--panel);border:1px solid var(--rule);
+    padding:14px 16px;margin-bottom:18px;
+  }
+  .overall .pct{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:20px;
+    min-width:56px;
+  }
+  .obar{flex:1;height:6px;background:var(--rule);position:relative}
+  .obar i{position:absolute;inset:0 auto 0 0;background:var(--teal);transition:width .3s}
+  .overall .cnt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+  .chip{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:8px 13px;border:1px solid var(--rule);
+    background:var(--panel);color:var(--muted);cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+  /* ---------- phases ---------- */
+  .band{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--faint);
+    padding-bottom:8px;border-bottom:1px solid var(--rule);
+    margin:30px 0 14px;
+  }
+  .phase{
+    background:var(--panel);border:1px solid var(--rule);
+    margin-bottom:10px;
+  }
+  .phase.done{border-color:#B9D4D0}
+  .phead{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:15px 16px;cursor:pointer;width:100%;
+    background:none;border:0;text-align:left;font:inherit;color:inherit;
+  }
+  .phead:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+  .pnum{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;
+    color:#fff;background:var(--slate);
+    min-width:30px;height:26px;display:grid;place-items:center;flex:none;
+    margin-top:1px;letter-spacing:.02em;
+  }
+  .phase.done .pnum{background:var(--teal)}
+  .pbody{flex:1;min-width:0}
+  .ptitle{font-family:'Archivo',sans-serif;font-weight:600;font-size:16.5px;letter-spacing:-.01em}
+  .pmeta{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);
+    margin-top:3px;letter-spacing:.02em;
+  }
+  .pbar{height:3px;background:var(--rule);margin-top:9px;position:relative}
+  .pbar i{position:absolute;inset:0 auto 0 0;background:var(--teal);transition:width .25s}
+  .caret{flex:none;color:var(--faint);font-size:11px;margin-top:5px;transition:transform .2s}
+  .phase[data-open="true"] .caret{transform:rotate(90deg)}
+
+  .tasks{display:none;padding:0 16px 6px 60px;border-top:1px solid #EDF0F4}
+  .phase[data-open="true"] .tasks{display:block}
+  .task{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid #F1F4F8}
+  .task:last-child{border-bottom:0}
+  .task input{
+    appearance:none;width:17px;height:17px;flex:none;margin-top:2px;
+    border:1.5px solid #B4C0D0;background:#fff;cursor:pointer;border-radius:2px;
+  }
+  .task input:checked{background:var(--teal);border-color:var(--teal)}
+  .task input:checked::after{
+    content:"";display:block;width:4px;height:8px;margin:2px auto 0;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg);
+  }
+  .task input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .tlabel{flex:1;cursor:pointer;min-width:0}
+  .tlabel b{font-weight:500}
+  .task input:checked + .tlabel b{color:var(--faint);text-decoration:line-through}
+  .note{display:block;font-size:13.5px;color:var(--muted);margin-top:3px}
+  .tag{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;
+    letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;
+    margin-top:6px;border-radius:2px;
+  }
+  .tag.lead{background:var(--amber-soft);color:var(--amber)}
+  .tag.ask{background:var(--alert-soft);color:var(--alert)}
+  .tag.trap{background:var(--teal-soft);color:var(--teal)}
+
+  /* ---------- flags ---------- */
+  .flags{
+    background:var(--alert-soft);border:1px solid #E8C9C9;
+    border-left:4px solid var(--alert);padding:16px 18px;margin-top:26px;
+  }
+  .flags h2{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--alert);font-weight:600;margin-bottom:10px;
+  }
+  .flags p{font-size:14px;margin-bottom:8px}
+  .flags p:last-child{margin-bottom:0}
+
+  footer{margin-top:26px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .status{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint)}
+  .reset{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;background:none;border:1px solid var(--rule);
+    padding:8px 13px;color:var(--muted);cursor:pointer;
+  }
+  .reset:hover{border-color:var(--alert);color:var(--alert)}
+
+  @media (max-width:560px){
+    .tasks{padding-left:16px}
+    .counters{gap:20px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">VU23220 / VU23221 · MidTown IT → RightPoint</div>
+    <h1>Incident Response Team Exercise<span class="sub">Project workflow — first task to last</span></h1>
+
+    <div class="burn">
+      <div class="burn-track">
+        <div class="burn-fill" id="fill"></div>
+        <div class="marker" id="m1"><span>AT1 · 19 SEP</span></div>
+        <div class="marker at2" id="m2"><span>AT2 · 20 NOV</span></div>
+        <div class="burn-now" id="nowlbl"></div>
+      </div>
+      <div class="counters">
+        <div class="counter"><div class="n hot" id="d1">—</div><div class="l">days to AT1</div></div>
+        <div class="counter"><div class="n" id="d2">—</div><div class="l">days to AT2</div></div>
+        <div class="counter"><div class="n" id="dw">—</div><div class="l">weeks left total</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="overall">
+    <div class="pct" id="opct">0%</div>
+    <div class="obar"><i id="ofill" style="width:0"></i></div>
+    <div class="cnt" id="ocnt">0 / 0</div>
+  </div>
+
+  <div class="filters" role="group" aria-label="Filter phases">
+    <button class="chip" data-f="all" aria-pressed="true">All</button>
+    <button class="chip" data-f="ongoing" aria-pressed="false">Ongoing</button>
+    <button class="chip" data-f="at1" aria-pressed="false">AT1</button>
+    <button class="chip" data-f="at2" aria-pressed="false">AT2</button>
+    <button class="chip" data-f="open" aria-pressed="false">Unfinished only</button>
+  </div>
+
+  <div id="board"></div>
+
+  <div class="flags">
+    <h2>Still to confirm with Ian</h2>
+    <p><b>The AT2 submission block looks copy-pasted from AT1.</b> It names the AT1 folder and an <code>_AT1_</code> filename. Check the correct folder and naming convention before you upload.</p>
+    <p style="color:var(--teal)"><b>Resolved:</b> AT2 is Week 17 — 20 November 2026. The guidance notes saying Week 16 are out of date.</p>
+  </div>
+
+  <footer>
+    <div class="status" id="saved">Progress saves automatically.</div>
+    <button class="reset" id="reset">Clear all progress</button>
+  </footer>
+</div>
+
+<script>
+/* GitHub Pages version: use the browser's own storage so ticks persist per device */
+if(!window.storage){window.storage={
+  async get(k){try{const v=localStorage.getItem(k);return v===null?null:{value:v};}catch(e){return null;}},
+  async set(k,v){localStorage.setItem(k,v);},
+  async delete(k){localStorage.removeItem(k);}
+};}
+</script>
+<script>
+const DATA=[
+ {band:"Runs the whole way through",phases:[
+  {id:"c1",n:"∞",title:"Continuous tasks",meta:"Start week 1 · never stops",group:"ongoing",tasks:[
+   {id:"c1a",t:"Weekly status reports",n:"Overall status, milestone actual vs planned, issues and risks, timeline, work completed, end-user training needs. Part 6 is a straight tick on the marking criteria — and these can't credibly be backfilled.",tag:"trap",tagt:"Can't be backdated"},
+   {id:"c1b",t:"Minute every meeting",n:"Use the MEETING_MINUTES template. Minutes are required inside the briefing report as well."},
+   {id:"c1c",t:"Keep a contribution log",n:"Who wrote what. The comms plan and the AT2 closure report both need an authorship table in the appendix."}
+  ]}
+ ]},
+ {band:"AT1 — planning · due 19 September (extended)",phases:[
+  {id:"p1",n:"01",title:"Kickoff meeting",meta:"One meeting, two deliverables",group:"at1",tasks:[
+   {id:"p1a",t:"Form the team",n:"Four to six members. Roles must include a Quality Assurance Lead and a Communications Lead."},
+   {id:"p1b",t:"Agree at least three performance metrics"},
+   {id:"p1c",t:"Write down your scenario questions for Ian",n:"Required by Part 1 a) and marked as \"presented questions about the project\". Submitted separately from the charter."},
+   {id:"p1d",t:"Minute it"}
+  ]},
+  {id:"p2",n:"02",title:"Communication plan",meta:"Part 3",group:"at1",tasks:[
+   {id:"p2a",t:"Do this before the briefing report",n:"Part 2 says the briefing report is submitted \"in accordance with\" Part 3 — so the comms plan sets the chair, minute-taker, cadence and reporting format that everything else follows.",tag:"trap",tagt:"Order matters"},
+   {id:"p2b",t:"Cover all three categories",n:"The plan table conflates communication channels, meeting schedules, and document distribution events. Each needs a different approach."}
+  ]},
+  {id:"p3",n:"03",title:"Briefing report",meta:"Part 2 · use the IRTx template",group:"at1",tasks:[
+   {id:"p3a",t:"Team composition and roles table"},
+   {id:"p3b",t:"Red, Blue and Purple activity tables"},
+   {id:"p3c",t:"Performance metrics (min. 3)"},
+   {id:"p3d",t:"Meeting minutes and Appendix A"},
+   {id:"p3e",t:"Use VU23220_VU23221_IRTx-Briefing_Report",n:"Ian names this file explicitly. Its tables map straight onto the marking criteria. Rename with your name."}
+  ]},
+  {id:"p4",n:"04",title:"Project charter",meta:"Part 1 · max 10 pages",group:"at1",tasks:[
+   {id:"p4a",t:"Methodology goes in §5.1 Timeline",n:"Not the introduction. The template says so explicitly and it's the most commonly missed placement.",tag:"trap",tagt:"Placement trap"},
+   {id:"p4b",t:"Cyber business-impact statement goes in §7.3 Risks",n:"Separate from your project risks. Both are required.",tag:"trap",tagt:"Placement trap"},
+   {id:"p4c",t:"WBS lives inside the Gantt or spreadsheet"},
+   {id:"p4d",t:"Freeze a baseline copy of the schedule",n:"Export planned start and finish dates the day the schedule is final. AT2 Part 3 needs a planned-vs-actual graph you cannot reconstruct in November.",tag:"lead",tagt:"Do it now or lose it"},
+   {id:"p4e",t:"Every member signs off"}
+  ]},
+  {id:"p5",n:"05",title:"Evaluate the current IRP",meta:"Part 4 · memo to the CSO, max 2 pages",group:"at1",tasks:[
+   {id:"p5a",t:"Read NIST SP 800-61r2 §2.3.2 and §2.3.3",n:"Both on page 8. Note it's revision 2."},
+   {id:"p5b",t:"Gap-analyse the CSO's draft IRP"},
+   {id:"p5c",t:"Five or more justified recommendations"},
+   {id:"p5d",t:"CSOC components and how to implement one"},
+   {id:"p5e",t:"Do this before Phase 6",n:"The findings feed what you build next.",tag:"trap",tagt:"Order matters"}
+  ]},
+  {id:"p6",n:"06",title:"Build the IRTx",meta:"Part 5 · split across the team",group:"at1",tasks:[
+   {id:"p6a",t:"Rules of engagement"},
+   {id:"p6b",t:"Red team runbook",n:"Attack range, methods, Kali and Metasploit, PCAPs staged into the SIEM."},
+   {id:"p6c",t:"Blue team playbook",n:"IRT services, response handling, reporting and comms process, evidence collection."},
+   {id:"p6d",t:"Observer checklist",n:"The teacher is Purple team."},
+   {id:"p6e",t:"Updated IRP and manual injects"}
+  ]},
+  {id:"p6b",n:"06+",title:"Virtual network build",meta:"Start in week 1, not here",group:"at1",tasks:[
+   {id:"p6ba",t:"Stand up the environment",n:"pfSense, Security Onion with Splunk or ELK, Kali, DVWA or Metasploitable, blue workstations.",tag:"lead",tagt:"Always overruns"},
+   {id:"p6bb",t:"Snapshot every VM once working"},
+   {id:"p6bc",t:"Capture end-to-end ping screenshots now",n:"You need them for AT2 Part 1 anyway."}
+  ]},
+  {id:"p7",n:"07",title:"Compile and submit AT1",meta:"Single zipped file",group:"at1",tasks:[
+   {id:"p7a",t:"Walk the AT1 marking criteria line by line"},
+   {id:"p7b",t:"Everyone signs off"},
+   {id:"p7c",t:"Submit by 19 September 2026"}
+  ]}
+ ]},
+ {band:"AT2 — implementation · due November",phases:[
+  {id:"p8",n:"08",title:"Book the team briefing",meta:"At least one week before your IRTx",group:"at2",tasks:[
+   {id:"p8a",t:"Lock the date early",n:"This lead time gates your exercise date. Match-ups, exchange blue playbooks and rules of engagement with the other team, Q&A.",tag:"lead",tagt:"Hard lead time"}
+  ]},
+  {id:"p9",n:"09",title:"Dry run",meta:"Not marked — do it anyway",group:"at2",tasks:[
+   {id:"p9a",t:"Run your own runbook against your own network"},
+   {id:"p9b",t:"Confirm events actually land in the SIEM"},
+   {id:"p9c",t:"Restore snapshots afterwards"}
+  ]},
+  {id:"p10",n:"10",title:"Run the IRTx as Red team",meta:"Max two hours",group:"at2",tasks:[
+   {id:"p10a",t:"Verify the network first"},
+   {id:"p10b",t:"Red starts at least an hour before Blue arrives"},
+   {id:"p10c",t:"Blue works the playbook, Purple observes and injects"}
+  ]},
+  {id:"p11",n:"11",title:"Sit the other team's IRTx as Blue",meta:"Their exercise, your playbook",group:"at2",tasks:[
+   {id:"p11a",t:"Attend and work your own playbook"}
+  ]},
+  {id:"p12",n:"12",title:"Roundtable and observer report",meta:"Same day if you can",group:"at2",tasks:[
+   {id:"p12a",t:"Hold the roundtable"},
+   {id:"p12b",t:"Collect the teacher's observer report",n:"You need it for your appendix, and your closure report must be consistent with it.",tag:"trap",tagt:"Consistency checked"}
+  ]},
+  {id:"p13",n:"13",title:"Exercise Closure Report",meta:"Part 2 · max 5 pages",group:"at2",tasks:[
+   {id:"p13a",t:"Use the exact headings listed"},
+   {id:"p13b",t:"Three things right, three wrong, three improvements"},
+   {id:"p13c",t:"Page numbers, all names in header/footer or cover page"},
+   {id:"p13d",t:"Contribution referenced in the appendix"}
+  ]},
+  {id:"p14",n:"14",title:"Project Closure Report",meta:"Part 3 · max 3 pages",group:"at2",tasks:[
+   {id:"p14a",t:"Team performance; timeframe, scope and quality actual vs planned"},
+   {id:"p14b",t:"Risk strategy review"},
+   {id:"p14c",t:"Three or more objectives reviewed"},
+   {id:"p14d",t:"Three or more improvements"},
+   {id:"p14e",t:"End-user training plan"},
+   {id:"p14f",t:"Planned-vs-actual graph",n:"Built from the baseline you froze back in Phase 4.",tag:"lead",tagt:"Needs Phase 4 baseline"},
+   {id:"p14g",t:"Sign-off checklist for Ian and final sign-off"}
+  ]},
+  {id:"p15",n:"15",title:"Presentation",meta:"Parts 4–5 · target 15 minutes",group:"at2",tasks:[
+   {id:"p15a",t:"Presentation plan (max 2 pages)"},
+   {id:"p15b",t:"Slides — max 10, same template for everyone"},
+   {id:"p15c",t:"Each member covers their own lessons learned plus one other section",n:"Two good and two unfavourable experiences each."},
+   {id:"p15d",t:"Rehearse and time it",n:"15 minutes target, 12–20 acceptable."},
+   {id:"p15e",t:"Present"}
+  ]}
+ ]}
+];
+
+const KEY='irtx-workflow-v1';
+let state={};
+const board=document.getElementById('board');
+
+/* ---------- dates ---------- */
+function dates(){
+  const now=new Date();
+  const start=new Date(2026,7,1);      // 1 Aug 2026
+  const at1=new Date(2026,8,19);       // 19 Sep 2026 — extended
+  const at2=new Date(2026,10,20);      // 20 Nov 2026 — Week 17, confirmed
+  const day=864e5;
+  const d1=Math.ceil((at1-now)/day), d2=Math.ceil((at2-now)/day);
+  document.getElementById('d1').textContent=d1>0?d1:'0';
+  document.getElementById('d2').textContent=d2>0?d2:'0';
+  document.getElementById('dw').textContent=d2>0?Math.ceil(d2/7):'0';
+  const span=at2-start, pos=Math.min(Math.max((now-start)/span,0),1);
+  document.getElementById('fill').style.width=(pos*100)+'%';
+  document.getElementById('m1').style.left=(((at1-start)/span)*100)+'%';
+  document.getElementById('m2').style.left='calc(100% - 2px)';
+  const nl=document.getElementById('nowlbl');
+  nl.style.left=(pos*100)+'%';
+  nl.textContent='TODAY · '+now.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+}
+
+/* ---------- render ---------- */
+function render(){
+  board.innerHTML='';
+  DATA.forEach(sec=>{
+    const b=document.createElement('div');
+    b.className='band'; b.textContent=sec.band; b.dataset.band=sec.phases[0].group;
+    board.appendChild(b);
+    sec.phases.forEach(p=>{
+      const done=p.tasks.filter(t=>state[t.id]).length;
+      const el=document.createElement('section');
+      el.className='phase'+(done===p.tasks.length?' done':'');
+      el.dataset.group=p.group; el.dataset.open=state['_open_'+p.id]?'true':'false';
+      el.dataset.complete=done===p.tasks.length;
+
+      const head=document.createElement('button');
+      head.className='phead'; head.setAttribute('aria-expanded',el.dataset.open);
+      head.innerHTML=`<span class="pnum">${p.n}</span>
+        <span class="pbody">
+          <span class="ptitle">${p.title}</span>
+          <span class="pmeta">${p.meta} · ${done}/${p.tasks.length}</span>
+          <span class="pbar"><i style="width:${(done/p.tasks.length)*100}%"></i></span>
+        </span>
+        <span class="caret">▶</span>`;
+      head.onclick=()=>{state['_open_'+p.id]=el.dataset.open!=='true';save();render();};
+      el.appendChild(head);
+
+      const list=document.createElement('div'); list.className='tasks';
+      p.tasks.forEach(t=>{
+        const row=document.createElement('div'); row.className='task';
+        const cb=document.createElement('input');
+        cb.type='checkbox'; cb.id=t.id; cb.checked=!!state[t.id];
+        cb.onchange=()=>{state[t.id]=cb.checked;save();render();};
+        const lab=document.createElement('label');
+        lab.className='tlabel'; lab.htmlFor=t.id;
+        lab.innerHTML=`<b>${t.t}</b>${t.n?`<span class="note">${t.n}</span>`:''}${t.tag?`<span class="tag ${t.tag}">${t.tagt}</span>`:''}`;
+        row.append(cb,lab); list.appendChild(row);
+      });
+      el.appendChild(list);
+      board.appendChild(el);
+    });
+  });
+  applyFilter();
+  const all=DATA.flatMap(s=>s.phases).flatMap(p=>p.tasks);
+  const n=all.filter(t=>state[t.id]).length;
+  const pct=Math.round((n/all.length)*100);
+  document.getElementById('opct').textContent=pct+'%';
+  document.getElementById('ofill').style.width=pct+'%';
+  document.getElementById('ocnt').textContent=`${n} / ${all.length} done`;
+}
+
+/* ---------- filter ---------- */
+let filter='all';
+function applyFilter(){
+  document.querySelectorAll('.phase').forEach(p=>{
+    let show=true;
+    if(filter==='open') show=p.dataset.complete!=='true';
+    else if(filter!=='all') show=p.dataset.group===filter;
+    p.style.display=show?'':'none';
+  });
+  document.querySelectorAll('.band').forEach(b=>{
+    let next=b.nextElementSibling, any=false;
+    while(next&&next.classList.contains('phase')){if(next.style.display!=='none')any=true;next=next.nextElementSibling;}
+    b.style.display=any?'':'none';
+  });
+}
+document.querySelectorAll('.chip').forEach(c=>{
+  c.onclick=()=>{
+    filter=c.dataset.f;
+    document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));
+    applyFilter();
+  };
+});
+
+/* ---------- persistence ---------- */
+let saveTimer;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{
+      await window.storage.set(KEY,JSON.stringify(state));
+      flash('Saved '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}));
+    }catch(e){flash('Could not save — progress will be lost when you close this.');}
+  },350);
+}
+function flash(msg){document.getElementById('saved').textContent=msg;}
+
+async function load(){
+  try{
+    const r=await window.storage.get(KEY);
+    if(r&&r.value) state=JSON.parse(r.value);
+  }catch(e){/* nothing stored yet */}
+  DATA[0].phases.forEach(p=>{if(state['_open_'+p.id]===undefined)state['_open_'+p.id]=true;});
+  dates(); render();
+}
+
+document.getElementById('reset').onclick=async()=>{
+  if(!confirm('Clear every tick and start again? This cannot be undone.'))return;
+  state={};
+  try{await window.storage.delete(KEY);}catch(e){}
+  flash('Progress cleared.');
+  render();
+};
+
+load();
+</script>
+</body>
+</html>
